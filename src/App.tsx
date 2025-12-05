@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Play, Trophy, Plus, X } from "lucide-react";
 
-import hut from "./assets/hut.png";
+import hut from "./assets/hut1.png";
 import sport from "./assets/sport.png";
 import danantara from "./assets/danan.png";
 
