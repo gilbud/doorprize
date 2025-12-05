@@ -7,18 +7,18 @@ import danantara from "./assets/danan.png";
 
 export default function LotterySpinner() {
   const [batchInput, setBatchInput] = useState("");
-  const [nameList, setNameList] = useState([]);
-  const [currentName, setCurrentName] = useState("");
+  const [nameList, setNameList] = useState<string[]>([]);
+  const [history, setHistory] = useState<string[]>([]);
+  const [currentName, setCurrentName] = useState<string>("");
   const [isSpinning, setIsSpinning] = useState(false);
-  const [winner, setWinner] = useState(null);
-  const [history, setHistory] = useState([]);
+  const [winner, setWinner] = useState<string | null>(null);
 
   const audioContextRef = useRef(null);
 
   const playTickSound = () => {
     const audioContext =
       audioContextRef.current ||
-      new (window.AudioContext || window.webkitAudioContext)();
+      new (window.AudioContext || (window as any).webkitAudioContext)();
     audioContextRef.current = audioContext;
 
     const oscillator = audioContext.createOscillator();
@@ -81,18 +81,18 @@ export default function LotterySpinner() {
     }
   };
 
-  const removeName = (name) => {
+  const removeName = (name: string) => {
     setNameList(nameList.filter((n) => n !== name));
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && e.ctrlKey) {
       addBatchNames();
     }
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isSpinning && nameList.length > 0) {
       interval = setInterval(() => {
         const randomIndex = Math.floor(Math.random() * nameList.length);
