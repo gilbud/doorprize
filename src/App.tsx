@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Play, Trophy, Plus, X } from "lucide-react";
 
 import hut from "./assets/hut.png";
@@ -13,7 +13,7 @@ export default function LotterySpinner() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
 
-  const audioContextRef = useRef(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const playTickSound = () => {
     const audioContext =
@@ -42,7 +42,7 @@ export default function LotterySpinner() {
   const playWinSound = () => {
     const audioContext =
       audioContextRef.current ||
-      new (window.AudioContext || window.webkitAudioContext)();
+      new (window.AudioContext || (window as any).webkitAudioContext)();
     audioContextRef.current = audioContext;
 
     const notes = [523.25, 659.25, 783.99, 1046.5];
@@ -119,12 +119,6 @@ export default function LotterySpinner() {
       setHistory((prev) => [finalName, ...prev.slice(0, 9)]);
       playWinSound();
     }, 3000);
-  };
-
-  const reset = () => {
-    setCurrentName("");
-    setWinner(null);
-    setIsSpinning(false);
   };
 
   const clearHistory = () => {
