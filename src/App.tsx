@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Play, Trophy, Plus, X } from "lucide-react";
 
 import hut from "./assets/hut1.png";
-import sport from "./assets/sport.png";
 import danantara from "./assets/danan.png";
 
 export default function LotterySpinner() {
@@ -12,7 +11,8 @@ export default function LotterySpinner() {
   const [currentName, setCurrentName] = useState<string>("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [winner, setWinner] = useState<string | null>(null);
-
+  const [numberOfWinners, setNumberOfWinners] = useState<number>(1);
+  const [currentWinners, setCurrentWinners] = useState<string[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const playTickSound = () => {
@@ -107,16 +107,31 @@ export default function LotterySpinner() {
 
   const startSpin = () => {
     if (isSpinning || nameList.length === 0) return;
+    const actualWinners = Math.min(numberOfWinners, nameList.length);
+
     setWinner(null);
+    setCurrentWinners([]);
     setIsSpinning(true);
 
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * nameList.length);
-      const finalName = nameList[randomIndex];
-      setCurrentName(finalName);
-      setWinner(finalName);
+      const winners: string[] = [];
+      const availableNames = [...nameList];
+
+      for (let i = 0; i < actualWinners; i++) {
+        const randomIndex = Math.floor(Math.random() * availableNames.length);
+        winners.push(availableNames[randomIndex]);
+        availableNames.splice(randomIndex, 1);
+      }
+
+      setCurrentName(winners[0]);
+      setWinner(winners[0]);
+      setCurrentWinners(winners);
       setIsSpinning(false);
-      setHistory((prev) => [finalName, ...prev.slice(0, 9)]);
+      setHistory((prev) => [...winners, ...prev.slice(0, 10 - winners.length)]);
+
+      // Remove winners from name list
+      setNameList((prev) => prev.filter((name) => !winners.includes(name)));
+
       playWinSound();
     }, 3000);
   };
@@ -129,11 +144,30 @@ export default function LotterySpinner() {
     <div className="min-h-screen bg-gradient-to-br from-blue-200 via-white to-blue-500 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-white text-center mb-8 drop-shadow-lg flex justify-center items-end gap-5">
-          <img src={sport} className="h-20" alt="" />
+          <h1 className="text-blue-500">Festival Rakyat</h1>
           DoorPrize
         </h1>
 
         <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6 my-20 ">
+          {/* Winner Count Selection */}
+          <div className="mb-6 w-full">
+            <label className="block text-lg mb-2 text-blue-500 font-bold">
+              Jumlah Pemenang
+            </label>
+            <select
+              value={numberOfWinners}
+              onChange={(e) => setNumberOfWinners(Number(e.target.value))}
+              disabled={isSpinning}
+              className=" px-4 py-3 outline-none text"
+            >
+              <option value={1}>1 Pemenang</option>
+              <option value={2}>2 Pemenang</option>
+              <option value={3}>3 Pemenang</option>
+              <option value={4}>4 Pemenang</option>
+              <option value={5}>5 Pemenang</option>
+            </select>
+          </div>
+
           {/* Display Name */}
           <div className="relative ">
             <div
@@ -145,10 +179,25 @@ export default function LotterySpinner() {
                 <div className="text-5xl font-bold text-white drop-shadow-lg mb-2 min-h-[80px] flex items-center justify-center">
                   {currentName || "???"}
                 </div>
+                {winner && currentWinners.length > 1 && (
+                  <div className="mt-4 text-white text-xl font-semibold">
+                    <div className="mb-2">Semua Pemenang:</div>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {currentWinners.map((w, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white bg-opacity-30 px-4 py-2 rounded-lg text-blue-500"
+                        >
+                          {idx + 1}. {w}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {winner && (
-                  <div className="flex items-center justify-center gap-2 text-white text-2xl font-semibold animate-bounce">
+                  <div className="flex items-center justify-center gap-2 text-white text-2xl font-semibold animate-bounce mt-4">
                     <Trophy className="w-8 h-8" />
-                    Pemenang!
+                    {currentWinners.length > 1 ? "Para Pemenang!" : "Pemenang!"}
                     <Trophy className="w-8 h-8" />
                   </div>
                 )}
@@ -176,14 +225,6 @@ export default function LotterySpinner() {
                 ? "Tambah Peserta Dulu"
                 : "Mulai Undian"}
             </button>
-            {/* <button
-              onClick={reset}
-              disabled={isSpinning}
-              className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white font-bold py-4 px-8 rounded-xl shadow-lg transform transition hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <RotateCcw className="w-5 h-5" />
-              Reset
-            </button> */}
           </div>
         </div>
 
@@ -194,7 +235,7 @@ export default function LotterySpinner() {
               value={batchInput}
               onChange={(e) => setBatchInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Contoh:&#10;Ahmad&#10;Budi&#10;Citra&#10;&#10;atau: Ahmad, Budi, Citra&#10;&#10;(Tekan Ctrl+Enter untuk menambahkan)"
+              placeholder="Contoh:&#10;Ahmad&#10;Budi&#10;Citra&#10;&#10;"
               disabled={isSpinning}
               rows={4}
               className="w-full px-4 py-3 border-2 border-blue-400 rounded-xl focus:border-purple-500 focus:outline-none text-lg resize-none"
