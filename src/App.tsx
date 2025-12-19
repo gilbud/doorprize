@@ -144,7 +144,7 @@ export default function LotterySpinner() {
     <div className="min-h-screen bg-gradient-to-br from-blue-200 via-white to-blue-500 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold text-white text-center mb-8 drop-shadow-lg flex justify-center items-end gap-5">
-          <h1 className="text-blue-500">Festival Rakyat</h1>
+          <h1 className="text-blue-500">Teras Rakyat</h1>
           DoorPrize
         </h1>
 
